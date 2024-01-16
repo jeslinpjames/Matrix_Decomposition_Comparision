@@ -31,3 +31,48 @@ void cholesky_decomposition(float **A, int n)
         delete[] L[i];
     delete[] L;
 }
+
+
+// LU decomposition
+void lu_decomposition(float **A, int n)
+{
+    float **L = new float *[n];
+    float **U = new float *[n];
+    for (int i = 0; i < n; i++)
+    {
+        L[i] = new float[n];
+        U[i] = new float[n];
+    }
+
+    for (int i = 0; i < n; i++)
+    {
+        for (int k = i; k < n; k++)
+        {
+            float sum = 0;
+            for (int j = 0; j < i; j++)
+                sum += (L[i][j] * U[j][k]);
+            U[i][k] = A[i][k] - sum;
+        }
+
+        for (int k = i; k < n; k++)
+        {
+            if (i == k)
+                L[i][i] = 1;
+            else
+            {
+                float sum = 0;
+                for (int j = 0; j < i; j++)
+                    sum += (L[k][j] * U[j][i]);
+                L[k][i] = (A[k][i] - sum) / U[i][i];
+            }
+        }
+    }
+
+    for (int i = 0; i < n; i++)
+    {
+        delete[] L[i];
+        delete[] U[i];
+    }
+    delete[] L;
+    delete[] U;
+}
