@@ -1,5 +1,14 @@
 #include <iostream>
 #include <cmath>
+#include <ctime>
+#include <algorithm>
+#include <fstream>
+#include <string>
+#include <sstream>
+#include <chrono>
+#include <iomanip>
+
+using namespace std;
 // Cholesky decomposition
 void cholesky_decomposition(float **A, int n)
 {
@@ -128,4 +137,81 @@ void qr_decomposition(float **A, int n)
     }
     delete[] Q;
     delete[] R;
+}
+
+void read_positive_definite_matrix(float **resultMatrix, int dimension, const string &filename)
+{
+    // Open the CSV file
+    ifstream inputFile(filename);
+    string line;
+
+    // Read the file line by line
+    for (int i = 0; i < dimension && getline(inputFile, line); ++i)
+    {
+        stringstream lineStream(line);
+        string value;
+
+        // Parse each value and store it in the matrix
+        for (int j = 0; j < dimension && getline(lineStream, value, ','); ++j)
+        {
+            resultMatrix[i][j] = stof(value);
+        }
+    }
+
+    // Close the file
+    inputFile.close();
+}
+
+
+int main()
+{
+    const int matrixSize = 5; // Change this to the desired matrix dimension
+    float **matrix = new float *[matrixSize];
+    for (int i = 0; i < matrixSize; ++i)
+    {
+        matrix[i] = new float[matrixSize];
+    }
+
+    const string filename = "your_matrix_file.csv"; // Change this to your CSV file path
+
+    // Read positive definite matrix from CSV
+    read_positive_definite_matrix(matrix, matrixSize, filename);
+
+    // Measure Cholesky decomposition time
+    auto startCholesky = chrono::high_resolution_clock::now();
+    cholesky_decomposition(matrix, matrixSize);
+    auto endCholesky = chrono::high_resolution_clock::now();
+    auto durationCholesky = chrono::duration_cast<chrono::microseconds>(endCholesky - startCholesky).count();
+
+    // Measure QR decomposition time
+    auto startQR = chrono::high_resolution_clock::now();
+    qr_decomposition(matrix, matrixSize);
+    auto endQR = chrono::high_resolution_clock::now();
+    auto durationQR = chrono::duration_cast<chrono::microseconds>(endQR - startQR).count();
+
+    // Measure LU decomposition time
+    auto startLU = chrono::high_resolution_clock::now();
+    lu_decomposition(matrix, matrixSize);
+    auto endLU = chrono::high_resolution_clock::now();
+    auto durationLU = chrono::duration_cast<chrono::microseconds>(endLU - startLU).count();
+
+    // Output results
+    cout << "Cholesky Decomposition Time: " << durationCholesky << " microseconds" << endl;
+    cout << "QR Decomposition Time: " << durationQR << " microseconds" << endl;
+    cout << "LU Decomposition Time: " << durationLU << " microseconds" << endl;
+
+    // Calculate ratio of run times
+    double ratioCholeskyQR = static_cast<double>(durationCholesky) / durationQR;
+    double ratioCholeskyLU = static_cast<double>(durationCholesky) / durationLU;
+
+    cout << "Ratio of Cholesky to QR to LU Decomposition Time: "
+         << fixed << setprecision(2) << ratioCholeskyQR << " : " << ratioCholeskyLU << " : " << ratioCholeskyLU <<endl;
+
+    for (int i = 0; i < matrixSize; ++i)
+    {
+        delete[] matrix[i];
+    }
+    delete[] matrix;
+
+    return 0;
 }
