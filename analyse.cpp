@@ -76,3 +76,56 @@ void lu_decomposition(float **A, int n)
     delete[] L;
     delete[] U;
 }
+
+
+// QR decomposition
+void qr_decomposition(float **A, int n)
+{
+    float **Q = new float *[n];
+    float **R = new float *[n];
+    for (int i = 0; i < n; i++)
+    {
+        Q[i] = new float[n];
+        R[i] = new float[n];
+    }
+
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            Q[i][j] = 0;
+            R[i][j] = 0;
+        }
+    }
+
+    for (int i = 0; i < n; i++)
+    {
+        float norm = 0;
+        for (int j = 0; j < n; j++)
+            norm += A[j][i] * A[j][i];
+        norm = sqrt(norm);
+        R[i][i] = norm;
+
+        for (int j = 0; j < n; j++)
+            Q[j][i] = A[j][i] / norm;
+
+        for (int j = i + 1; j < n; j++)
+        {
+            float dot = 0;
+            for (int k = 0; k < n; k++)
+                dot += Q[k][i] * A[k][j];
+            R[i][j] = dot;
+
+            for (int k = 0; k < n; k++)
+                A[k][j] -= Q[k][i] * dot;
+        }
+    }
+
+    for (int i = 0; i < n; i++)
+    {
+        delete[] Q[i];
+        delete[] R[i];
+    }
+    delete[] Q;
+    delete[] R;
+}
